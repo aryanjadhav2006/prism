@@ -1,0 +1,10 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+google-genai>=0.1.1
+pydantic>=2.0
+python-multipart>=0.0.6
+pypdf>=3.10.0
+python-docx>=0.8.11
+python-dotenv>=1.0.0
+sse-starlette>=1.6.0
+httpx>=0.24.0

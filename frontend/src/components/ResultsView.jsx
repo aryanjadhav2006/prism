@@ -1,0 +1,228 @@
+import React, { useState } from "react";
+import { Sparkles, Copy, Check, Download, RefreshCw, MessageSquare, GitFork, BookOpen, Layers, Zap } from "lucide-react";
+
+export default function ResultsView({ 
+  result, 
+  onRestartIntervention, 
+  onOpenCharacterChat 
+}) {
+  const [activeTab, setActiveTab] = useState("story"); // "story" | "ripple" | "timeline"
+  const [copied, setCopied] = useState(false);
+
+  if (!result) return null;
+
+  const divergence = result.divergence || {};
+  const story = result.story || "";
+  const characterProfile = result.character_profile || {};
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(story);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([story], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${divergence.divergence_title || "alternate_story"}.md`;
+    a.click();
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-fadeIn">
+      {/* Divergence Header */}
+      <div className="glass-panel p-6 sm:p-8 border-cyber-purple/40 bg-gradient-to-r from-cyber-purple/10 via-dark-800 to-cyber-cyan/10 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-purple/20 border border-cyber-purple/40 text-cyber-purple text-xs font-mono font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-cyber-cyan" />
+              Alternate Timeline Reality Generated
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+              {divergence.divergence_title || "The Divergent Branch"}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 font-mono">
+              <span className="text-cyber-cyan font-bold">Intervention Locus:</span> "{divergence.point_of_divergence}"
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              onClick={() => onOpenCharacterChat(characterProfile.character_name || "Character")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyber-pink to-cyber-purple text-white text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-cyber-pink/20"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Interrogate {characterProfile.character_name || "Character"}</span>
+            </button>
+
+            <button
+              onClick={onRestartIntervention}
+              className="flex items-center gap-2 px-4 py-2.5 bg-dark-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold transition"
+            >
+              <RefreshCw className="w-4 h-4 text-cyber-cyan" />
+              <span>New Divergence</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation View Tabs */}
+      <div className="flex items-center gap-3 border-b border-slate-800 pb-2">
+        <button
+          onClick={() => setActiveTab("story")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+            activeTab === "story"
+              ? "bg-cyber-cyan/20 border border-cyber-cyan/40 text-cyber-cyan"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          Alternate Narrative Story
+        </button>
+
+        <button
+          onClick={() => setActiveTab("ripple")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+            activeTab === "ripple"
+              ? "bg-cyber-purple/20 border border-cyber-purple/40 text-cyber-purple"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <GitFork className="w-4 h-4" />
+          Butterfly Effect Ripple Graph
+        </button>
+
+        <button
+          onClick={() => setActiveTab("timeline")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+            activeTab === "timeline"
+              ? "bg-cyber-pink/20 border border-cyber-pink/40 text-cyber-pink"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          Altered Timeline Plot Points
+        </button>
+      </div>
+
+      {/* TAB 1: Long-form Story Reader */}
+      {activeTab === "story" && (
+        <div className="glass-panel p-6 sm:p-10 space-y-6 relative">
+          {/* Action Bar */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <span className="text-xs font-mono text-slate-400">
+              Generated by Agent 5 (Narrative Writer Agent)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-lg text-xs font-medium transition"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? "Copied!" : "Copy Markdown"}</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-lg text-xs font-medium transition"
+              >
+                <Download className="w-3.5 h-3.5 text-cyber-cyan" />
+                <span>Export File</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Rendered Story Text */}
+          <div className="prose prose-invert max-w-none space-y-4 text-slate-200 leading-relaxed font-sans text-sm sm:text-base whitespace-pre-line">
+            {story}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: Ripple Effect Graph */}
+      {activeTab === "ripple" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1st Order Consequences */}
+            <div className="glass-panel p-6 space-y-4">
+              <div className="flex items-center gap-2 text-cyber-cyan font-bold text-sm border-b border-slate-800 pb-3">
+                <Zap className="w-4 h-4" />
+                <span>Immediate (1st Order) Consequences</span>
+              </div>
+              <div className="space-y-3">
+                {(divergence.immediate_consequences || []).map((item, i) => (
+                  <div key={i} className="p-4 bg-dark-900/80 border border-slate-800 rounded-xl space-y-1">
+                    <h4 className="text-xs font-bold text-white">{item.title || item}</h4>
+                    <p className="text-xs text-slate-400">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2nd Order Secondary Consequences */}
+            <div className="glass-panel p-6 space-y-4">
+              <div className="flex items-center gap-2 text-cyber-purple font-bold text-sm border-b border-slate-800 pb-3">
+                <GitFork className="w-4 h-4" />
+                <span>Cascading (2nd Order) Ripple Effects</span>
+              </div>
+              <div className="space-y-3">
+                {(divergence.secondary_consequences || []).map((item, i) => (
+                  <div key={i} className="p-4 bg-dark-900/80 border border-slate-800 rounded-xl space-y-1">
+                    <h4 className="text-xs font-bold text-white">{item.title || item}</h4>
+                    <p className="text-xs text-slate-400">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Unchanged Baseline Elements */}
+          <div className="glass-panel p-6 space-y-3">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Anchored Unchanged World Elements
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {(divergence.unchanged_elements || []).map((elem, i) => (
+                <span key={i} className="text-xs px-3 py-1.5 bg-dark-900 text-slate-300 border border-slate-800 rounded-lg">
+                  ✓ {elem}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Alternate Timeline Plot Points */}
+      {activeTab === "timeline" && (
+        <div className="glass-panel p-6 sm:p-8 space-y-6">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-3">
+            Chronological Alternate Reality Plot Points
+          </h3>
+          <div className="space-y-4">
+            {(divergence.alternate_timeline || []).map((point, i) => (
+              <div key={i} className="p-4 bg-dark-900/80 border border-slate-800 rounded-xl flex items-start gap-4">
+                <span className="w-7 h-7 rounded-lg bg-cyber-purple/20 text-cyber-purple font-mono font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                  #{i + 1}
+                </span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="text-sm font-bold text-white">{point.title || point}</h4>
+                    {point.impact_rating && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30">
+                        {point.impact_rating}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {point.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
