@@ -29,7 +29,7 @@ export default function Navbar({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-lg tracking-wide bg-gradient-to-r from-white via-slate-200 to-cyber-cyan bg-clip-text text-transparent">
-                CHRONO-AGENT
+                PRISM
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyber-purple/20 border border-cyber-purple/40 text-cyber-purple font-semibold">
                 MVP

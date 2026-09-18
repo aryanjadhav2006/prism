@@ -40,7 +40,7 @@ export default function Sidebar({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-sm tracking-wide text-white">
-                CHRONO-AGENT
+                PRISM
               </span>
               <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyber-purple/20 text-cyber-purple font-semibold border border-cyber-purple/30">
                 LAB

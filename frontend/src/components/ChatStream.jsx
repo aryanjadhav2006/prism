@@ -29,7 +29,7 @@ export default function ChatStream({
             </div>
           </div>
           <h2 className="text-2xl font-extrabold text-white">
-            Welcome to CHRONO-AGENT
+            Welcome to PRISM
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
             Upload a story file (PDF/TXT) or select a demo story from the left sidebar to initialize the 5-Agent Narrative Framework.

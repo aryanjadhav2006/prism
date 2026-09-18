@@ -1,6 +1,6 @@
-# CHRONO-AGENT: Multi-Agent Narrative Framework
+# PRISM: Multi-Agent Narrative Framework
 
-CHRONO-AGENT is an AI-powered **Multi-Agent Narrative Framework** built for narrative divergence and butterfly effect simulation. Ingest any text-based story (PDF, DOCX, TXT, or raw text), extract its lore & continuity boundaries, intervene at pivotal decision checkpoints, and watch five specialized autonomous agents reason through cascading consequences to generate alternate realities.
+PRISM is an AI-powered **Multi-Agent Narrative Framework** built for narrative divergence and butterfly effect simulation. Ingest any text-based story (PDF, DOCX, TXT, or raw text), extract its lore & continuity boundaries, intervene at pivotal decision checkpoints, and watch five specialized autonomous agents reason through cascading consequences to generate alternate realities.
 
 ---
 
