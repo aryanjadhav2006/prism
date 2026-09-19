@@ -154,7 +154,7 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Image Upload Box */}
             <div>
-              <label className="text-[11px] uppercase tracking-wider font-mono text-slate-400 font-semibold block mb-1.5">
+              <label className="text-xs uppercase tracking-wider font-mono font-bold text-slate-800 dark:text-slate-300 block mb-1.5">
                 1. Upload Image / Snapshot
               </label>
               <div
@@ -162,8 +162,8 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
                 onDrop={handleDrop}
                 className={`relative h-44 rounded-2xl border-2 border-dashed transition flex flex-col items-center justify-center p-3 text-center overflow-hidden ${
                   imagePreview
-                    ? "border-cyber-cyan/40 bg-dark-900"
-                    : "border-slate-700/80 hover:border-slate-500 bg-dark-900/60"
+                    ? "border-cyber-purple/50 bg-slate-100 dark:bg-dark-900"
+                    : "border-slate-300 dark:border-slate-700 hover:border-cyber-purple/60 bg-slate-50 dark:bg-dark-900/60"
                 }`}
               >
                 {imagePreview ? (
@@ -184,11 +184,11 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
                   </div>
                 ) : (
                   <label className="cursor-pointer flex flex-col items-center gap-2">
-                    <div className="p-3 bg-slate-800/60 rounded-full text-slate-400">
-                      <UploadCloud className="w-6 h-6 text-cyber-cyan" />
+                    <div className="p-3 bg-cyber-purple/10 dark:bg-slate-800/60 rounded-full text-cyber-purple">
+                      <UploadCloud className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-200">
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                         Click to upload or drag & drop
                       </p>
                       <p className="text-[10px] text-slate-500 mt-0.5">
@@ -208,7 +208,7 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
 
             {/* Visual Anchors / Details Field */}
             <div className="flex flex-col">
-              <label className="text-[11px] uppercase tracking-wider font-mono text-slate-400 font-semibold block mb-1.5">
+              <label className="text-xs uppercase tracking-wider font-mono font-bold text-slate-800 dark:text-slate-300 block mb-1.5">
                 2. Key Visual Details & Anchors
               </label>
               <textarea
@@ -216,7 +216,7 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
                 placeholder="E.g., A solitary astronaut holding a cracked helmet in a red sand desert, with twin moons rising above the horizon..."
-                className="flex-1 w-full p-3.5 bg-dark-900 border border-slate-700/80 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition font-mono leading-relaxed resize-none"
+                className="flex-1 w-full p-3.5 bg-slate-50 dark:bg-dark-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyber-purple focus:ring-1 focus:ring-cyber-purple transition font-mono leading-relaxed resize-none"
               />
               <p className="text-[10px] text-slate-500 mt-1">
                 Mention key subjects, environment, lighting, or actions shown in the image.
@@ -226,10 +226,10 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
 
           {/* Genre Selection */}
           <div>
-            <label className="text-[11px] uppercase tracking-wider font-mono text-slate-400 font-semibold block mb-2">
+            <label className="text-xs uppercase tracking-wider font-mono font-bold text-slate-800 dark:text-slate-300 block mb-2.5">
               3. Select Narrative Genre
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {GENRES.map((g) => {
                 const isSel = selectedGenre === g.id;
                 return (
@@ -237,17 +237,16 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
                     key={g.id}
                     type="button"
                     onClick={() => setSelectedGenre(g.id)}
-                    className={`p-2.5 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                    className={`py-3 px-3.5 rounded-xl border-2 text-left transition-all duration-150 flex items-center gap-2.5 ${
                       isSel
-                        ? "bg-gradient-to-r from-cyber-cyan/20 to-cyber-purple/20 border-cyber-cyan/60 text-white shadow-sm"
-                        : "bg-dark-900/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-dark-800"
+                        ? "bg-gradient-to-r from-cyber-purple to-cyber-pink text-white border-cyber-purple shadow-md shadow-cyber-purple/20 scale-[1.02]"
+                        : "bg-white dark:bg-dark-800/80 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:border-cyber-purple/50 hover:bg-slate-50 dark:hover:bg-dark-700"
                     }`}
                   >
-                    <span className="text-base">{g.emoji}</span>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-bold truncate">{g.label}</p>
-                      <p className="text-[10px] text-slate-400 truncate">{g.desc}</p>
-                    </div>
+                    <span className="text-xl">{g.emoji}</span>
+                    <span className="text-xs font-bold tracking-wide">
+                      {g.label}
+                    </span>
                   </button>
                 );
               })}
