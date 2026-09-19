@@ -272,16 +272,23 @@ export default function VisualStoryModal({ isOpen, onClose, onStoryIngested }) {
           {/* Generated Result Card */}
           {generatedResult && (
             <div className="p-5 bg-dark-900/90 border border-cyber-cyan/30 rounded-2xl space-y-4 animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-cyber-cyan" />
                   <h3 className="text-sm font-bold text-white tracking-wide">
                     {generatedResult.title}
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-purple/20 text-cyber-purple font-semibold border border-cyber-purple/30">
-                  {generatedResult.genre}
-                </span>
+                <div className="flex items-center gap-2">
+                  {generatedResult.cast_badge && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1">
+                      {generatedResult.cast_badge}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-purple/20 text-cyber-purple font-semibold border border-cyber-purple/30">
+                    {generatedResult.genre}
+                  </span>
+                </div>
               </div>
 
               {/* Story Body */}

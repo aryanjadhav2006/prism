@@ -8,9 +8,10 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
 
-from services.gemini_client import gemini_client
+from services.gemini_client import gemini_client, GeminiClient
 from services.document_parser import DocumentParser
 from services.pipeline import pipeline_runner
+from services.visual_story_generator import detect_people_count, generate_genre_narrative
 from agents.lore_agent import lore_agent
 from agents.interview_agent import interview_agent
 from sample_data.samples import SAMPLE_STORIES
@@ -59,60 +60,6 @@ class ImageStoryRequest(BaseModel):
     details: str
     genre: str = "Sci-Fi"
     image_data: Optional[str] = None
-
-def generate_genre_narrative(details: str, genre: str) -> Dict[str, Any]:
-    clean_details = details.strip() or "A mysterious solitary figure standing at the precipice of an unknown threshold."
-    first_clause = clean_details.split(".")[0].strip()
-    
-    genre_data = {
-        "Sci-Fi": {
-            "title": f"The Starlight Threshold: {first_clause[:30]}",
-            "p1": f"The telemetry monitors hummed with a low, rhythmic frequency against the pressurized hull. Outside the viewport, {clean_details.lower()} stood framed against the infinite black of deep space, bathed in the pale cyan wash of distant planetary rings. Every reading on the console indicated an anomaly—a distortion in the local quantum field that shouldn't exist.",
-            "p2": f"Years of orbital protocol had not prepared anyone for this exact visual coordinate. The atmospheric vapor inside the suit hissed gently as oxygen circulated, carrying the faint metallic scent of recycled air. Every instrument confirmed what the naked eye could barely reconcile: {clean_details} was not merely a passive relic of the void, but an active focal point radiating structured electromagnetic resonance.",
-            "p3": f"With a calibrated adjustment of the sensor arrays, the recording locked into memory. Whatever civilizations had come before, whatever ships had drifted through this quadrant in silence, the truth was now etched into the telemetry. The journey home would have to wait; the stars had finally answered."
-        },
-        "Cyberpunk": {
-            "title": f"Protocol Chrome: {first_clause[:30]}",
-            "p1": f"Acid rain hissed against the corrugated steel awnings, slicking the alleyway in brilliant reflections of neon magenta and electric amber. In the shadowed underbelly beneath the megastructure, {clean_details.lower()} cut through the chemical haze like a phantom signal broadcast on an outlaw frequency.",
-            "p2": f"Neural implants buzzed at the edge of consciousness, flagging biometrics and thermal signatures through the optical HUD. The street-level syndicate hadn't anticipated this—{clean_details} carried the unmistakably raw signature of black-market tech and unspoken debts. Sirens echoed three tiers above in the skyway, their sirens muffled by perpetual industrial smog.",
-            "p3": f"A gloved hand reached out, securing the perimeter with quiet, lethal efficiency. In a city where memories were bought on disposable memory chips and loyalties lasted until the next transfer cleared, this moment belonged to the shadows. The network had just been rewired."
-        },
-        "Gothic Horror": {
-            "title": f"The Chill of Blackwater: {first_clause[:30]}",
-            "p1": f"A suffocating Atlantic fog rolled across the jagged stones, dampening the sound of the churning breakers below. Standing amidst the salt-crusted silence, {clean_details.lower()} seemed to belong to another century entirely—a spectral sentinel preserved against the rot of time.",
-            "p2": f"The air smelled of brine, rusted iron, and the cold tallow of extinguished candles. There was an oppressive weight in the atmosphere, as though the ancient masonry itself held its breath. As the wind caught the hem of heavy woolen coats, {clean_details} remained fixed, defying the relentless gales that had claimed so many souls along this forsaken coast.",
-            "p3": f"Somewhere deep within the shadowed foundation, a heavy iron latch settled into place. The light did not flicker, but the dark had grown perceptibly closer. To witness such a scene was to understand that some secrets were never meant to be dragged into the sunlight."
-        },
-        "Noir Mystery": {
-            "title": f"Midnight on the Waterfront: {first_clause[:30]}",
-            "p1": f"The rain in this town had a way of washing away everything except the truth. Through the grime of a streaked window and the slow spiral of cigarette smoke, {clean_details.lower()} commanded the pavement like a headline waiting for the morning edition.",
-            "p2": f"Nobody ended up in this district at two in the morning by accident. You were either hunting someone down, running from your past, or waiting for a payoff that wasn't ever going to arrive. Observing {clean_details}, every cynical instinct honed over twenty years on the beat kicked into overdrive. The pieces of the case were finally lining up, and none of them were pretty.",
-            "p3": f"Tipping the brim of the fedora against the sleet, the decision was made. You don't walk away when the curtain starts to pull back—even when you know the stage is set for a double-cross. The night was young, and the city was about to pay its dues."
-        },
-        "High Fantasy": {
-            "title": f"Echoes of the High Vale: {first_clause[:30]}",
-            "p1": f"Dawn broke in ribbons of spun gold across the jagged teeth of the northern crags. In the hallowed silence between elder pines, {clean_details.lower()} stood bathed in ancient sunlight, as if stepped straight from the illuminated scrolls of the First Age.",
-            "p2": f"The mountain winds whispered in the cadence of a forgotten tongue, rustling through runic cloth and polished silver. Legends said that when {clean_details} returned to this highland sanctuary, the unbroken lineage of the guardians would stir once more from their slumber beneath the stone.",
-            "p3": f"Lifting the gaze toward the boundless azure sky, a solemn oath was renewed without a word spoken. The kingdoms in the valley might forget the old covenants, but the stone remembered. A new chapter of the chronicle had just begun."
-        },
-        "Dystopian": {
-            "title": f"The Ash Horizon: {first_clause[:30]}",
-            "p1": f"The wind carried the chalky grit of alkaline dust and sun-scorched rust. Across the fractured asphalt of what had once been an eight-lane interstate, {clean_details.lower()} remained as a testament to what humanity had built—and what the collapse had failed to completely erase.",
-            "p2": f"Geiger clicks chattered softly from the scavenged sensor pack strapped to the utility belt. Water rations were down to two swallows, but looking at {clean_details}, fatigue gave way to an electric jolt of adrenaline. Out here in the scorched expanse, survival was measured in miles and ammunition.",
-            "p3": f"Shouldering the pack, the lone traveler stepped forward into the blistering glare of the noon sun. The old world was buried under twenty feet of sand, but life still carved its stubborn mark into the ruins."
-        }
-    }
-    
-    selected = genre_data.get(genre, genre_data["Sci-Fi"])
-    story_body = f"### Act I: The Visual Awakening\n\n{selected['p1']}\n\n### Act II: The Tension Builds\n\n{selected['p2']}\n\n### Act III: The Resonant Aftermath\n\n{selected['p3']}"
-    
-    return {
-        "success": True,
-        "title": selected["title"],
-        "genre": genre,
-        "story": story_body,
-        "provider": "PRISM Neural Narrative Synthesizer"
-    }
 
 @app.get("/api/health")
 async def health_check():
@@ -244,20 +191,33 @@ async def character_chat(req: ChatRequest):
 @app.post("/api/image-story")
 async def create_image_story(req: ImageStoryRequest):
     """
-    Synthesizes a rich, atmospheric genre story from an uploaded image and user details,
-    with instant seamless failover for 100% reliability.
+    Extracts number of people from the image and synthesizes a tailored genre story,
+    with custom cast dynamics (Solo, Duo, Squad) and instant failover.
     """
     details = req.details.strip()
     genre = req.genre.strip() or "Sci-Fi"
+    
+    # 1. Detect number of people in the image using Computer Vision & NLP
+    people_count = detect_people_count(req.image_data, details)
+    logger.info(f"Visual Inception: Detected {people_count} person(s) for genre {genre}")
     
     # Try calling AI model with short timeout if key exists
     has_key = bool(os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY"))
     if has_key and len(details) > 3:
         try:
-            prompt = f"""You are a master literary storyteller. A user provided an image and these key details about it:
+            cast_focus = (
+                "Focus on solitary survival, duty, and internal stakes for a single protagonist."
+                if people_count == 1 else
+                "Focus on the interpersonal dynamic, tension, and shared secret between the two partners/counterparts."
+                if people_count == 2 else
+                "Focus on team coordination, chain of command, and squad survival against the odds for the group."
+            )
+            prompt = f"""You are a master literary storyteller. A user provided an image showing {people_count} person(s) and these key details about it:
 "{details}"
 
 Write a vivid, compelling, and atmospheric short story (3-4 paragraphs) strictly in the {genre} genre.
+The story must feature exactly {people_count} primary character(s) based on the image:
+{cast_focus}
 Incorporate the specific visual elements and subjects mentioned. Give it an evocative title at the very beginning starting with '# '."""
             gemini_client = GeminiClient()
             ai_story = await asyncio.wait_for(
@@ -267,18 +227,23 @@ Incorporate the specific visual elements and subjects mentioned. Give it an evoc
             if ai_story and len(ai_story.strip()) > 100:
                 lines = ai_story.strip().split("\n")
                 title = lines[0].replace("#", "").strip() if lines[0].startswith("#") else f"{genre}: Echoes of the Frame"
+                cast_labels = {1: "Solo Protagonist", 2: "Duo / Partnership", 3: "Group / Squad (3+)"}
+                cast_icons = {1: "👤", 2: "👥", 3: "👥👥"}
                 return {
                     "success": True,
                     "title": title,
                     "genre": genre,
+                    "people_count": people_count,
+                    "cast_type": cast_labels.get(people_count, "Solo Protagonist"),
+                    "cast_badge": f"{cast_icons.get(people_count, '👤')} {people_count} Person{'s' if people_count > 1 else ''} Detected ({cast_labels.get(people_count, 'Solo')})",
                     "story": ai_story.strip(),
                     "provider": "PRISM Cloud Vision LLM"
                 }
         except Exception as e:
             logger.info(f"AI image story fast-failover triggered: {e}")
             
-    # Deterministic high-caliber genre narrative synthesis
-    result = generate_genre_narrative(details, genre)
+    # Deterministic high-caliber genre narrative synthesis with exact person tweaks
+    result = generate_genre_narrative(details, genre, people_count)
     return result
 
 if __name__ == "__main__":
