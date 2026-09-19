@@ -4,6 +4,35 @@ Preloaded sample stories for instant hackathon demonstration.
 
 SAMPLE_STORIES = [
     {
+        "id": "last_lighthouse",
+        "title": "The Last Lighthouse of Blackwater Point",
+        "genre": "Atmospheric Coastal Drama",
+        "description": "Elias Vale, keeper of Blackwater Point lighthouse, faces a raging storm with a stripped lens mechanism and a lone emergency flare as three fishermen drift toward the shoals.",
+        "text": """For forty years, Elias Vale had tended the beacon at Blackwater Point, perched upon the razor-sharp granite cliffs above the North Reach. Tonight, the fiercest storm of the autumn had broken upon the headland. Rain lashed like shrapnel against the lantern room glass, and the Atlantic gale rattled the cast-iron gallery.
+
+Down below in the keeper's cottage, his daughter Mara stoked the iron stove, listening to the ominous metallic groan echoing down the central spiral staircase. The rotating brass clockwork mechanism of the main lens was grinding to a catastrophic halt. Its central gear teeth were stripped, leaving the great kerosene lamp burning steadily in only one direction instead of sweeping its warning beam across the treacherous Outer Shoals.
+
+Elias climbed to the gallery walkway, wiping salt spray from his eyes. Through the darkness, barely a mile offshore, he spotted the frantic running lights of a small wooden fishing dory—the Three Fishermen from the harbor village, hopelessly caught in the rip tide drifting straight toward the teeth of the jagged reef.
+
+In his heavy oilskin coat, Elias gripped the brass cylinder of their only remaining emergency signal flare. There was no radio; the harbor patrol ship was anchored ten miles south at Cape Sorrow, unable to see the stationary lamp against the rocky mainland. Firing the flare would signal the patrol ship's rescue cutter to rush to the shoals, but it would burn their singular distress signal, leaving Elias and Mara with zero backup if the storm breached the sea wall and submerged the lower generator.
+
+Mara climbed the final stairs, her face pale in the lantern glow. "Father! The light isn't turning! The dory will break on the rocks in five minutes! Do we fire the flare?"
+
+Elias raised the brass flare launcher into the wind, his thumb resting on the firing pin.""",
+        "suggested_interventions": [
+            {
+                "character": "Elias Vale",
+                "plot_point": "Elias holds the emergency flare while the fishing dory drifts toward the reef",
+                "intervention": "What if Elias decided not to fire the emergency flare?"
+            },
+            {
+                "character": "Mara",
+                "plot_point": "Mara urges her father to fire the flare",
+                "intervention": "What if Mara took the flare from Elias and fired it herself immediately?"
+            }
+        ]
+    },
+    {
         "id": "got_jon_snow",
         "title": "Game of Thrones: Jon Snow's Ultimate Choice",
         "genre": "Epic Fantasy",

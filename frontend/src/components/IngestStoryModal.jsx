@@ -167,6 +167,25 @@ export default function IngestStoryModal({ isOpen, onClose, onStoryIngested }) {
             </div>
           )}
 
+          {/* Animated Loading Progress Bar */}
+          {isParsing && (
+            <div className="p-4 bg-dark-900/90 border border-cyber-cyan/40 rounded-xl space-y-2.5 animate-fade-in shadow-lg">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-cyber-cyan font-bold flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-ping" />
+                  Processing Story File & Ingesting Lore...
+                </span>
+                <span className="text-slate-400 animate-pulse">Extracting Characters & Rules</span>
+              </div>
+              <div className="w-full bg-dark-800 rounded-full h-2.5 overflow-hidden border border-slate-700/80">
+                <div className="h-full bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink rounded-full animate-pulse w-full" />
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Building authoritative Story Bible and chronological checkpoints...
+              </p>
+            </div>
+          )}
+
           {error && (
             <div className="p-3 bg-red-950/40 border border-red-500/40 rounded-xl flex items-center gap-2 text-xs text-red-300">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />

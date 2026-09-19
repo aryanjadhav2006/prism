@@ -1,5 +1,6 @@
 import React from "react";
-import { Sparkles, BookOpen, Key, RefreshCw, Cpu, Layers } from "lucide-react";
+import { Sparkles, BookOpen, Key, RefreshCw, Layers } from "lucide-react";
+import PrismLogo from "./PrismLogo";
 
 export default function Navbar({ 
   currentStep, 
@@ -23,7 +24,7 @@ export default function Navbar({
         <div className="flex items-center gap-3 cursor-pointer" onClick={onReset}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyber-cyan to-cyber-purple p-0.5 shadow-lg shadow-cyber-purple/20">
             <div className="w-full h-full bg-dark-900 rounded-[10px] flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-cyber-cyan animate-pulse" />
+              <PrismLogo className="w-5 h-5" />
             </div>
           </div>
           <div>

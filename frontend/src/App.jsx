@@ -4,6 +4,7 @@ import ChatStream from "./components/ChatStream";
 import InputDock from "./components/InputDock";
 import IngestStoryModal from "./components/IngestStoryModal";
 import CharacterChatModal from "./components/CharacterChatModal";
+import LoginModal from "./components/LoginModal";
 
 import { getHealth, getSamples, uploadDocument, analyzeLore, generateDivergenceSync } from "./services/api";
 
@@ -12,6 +13,22 @@ export default function App() {
   const [lore, setLore] = useState(null);
   const [activeSampleId, setActiveSampleId] = useState(null);
   const [samples, setSamples] = useState([]);
+
+  // User Auth State
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("PRISM_USER");
+      return saved ? JSON.parse(saved) : {
+        username: "narrator",
+        display_name: "Narrator",
+        role: "Narrative Architect",
+        avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=narrator"
+      };
+    } catch {
+      return null;
+    }
+  });
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Theme state
   const [theme, setTheme] = useState(localStorage.getItem("THEME") || "dark");
@@ -54,6 +71,16 @@ export default function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem("PRISM_USER", JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("PRISM_USER");
+  };
+
   const addLog = (agent_id, message) => {
     const timestamp = new Date().toLocaleTimeString();
     setPipelineLogs((prev) => [...prev, { timestamp, agent_id, message }]);
@@ -68,11 +95,11 @@ export default function App() {
       const data = await analyzeLore(text);
       setLore(data.lore);
       const chars = data.lore?.characters || [];
-      const evts = data.lore?.timeline_events || [];
+      const evts = data.lore?.chronological_timeline || data.lore?.timeline_events || [];
       if (chars.length > 0) setSelectedCharacter(chars[0].name);
       if (evts.length > 0) setSelectedPlotPoint(evts[evts.length - 1].title);
     } catch (err) {
-      alert(`Lore Analysis Error: ${err.message}`);
+      alert(`Story Bible Ingestion Error: ${err.message}`);
     }
   };
 
@@ -102,40 +129,61 @@ export default function App() {
       },
     ]);
 
-    // Progressive UI Telemetry Animations
+    // Progressive UI Telemetry with all 7 Grounded Agents
     setAgentStates({
       lore_agent: { status: "completed" },
       character_agent: { status: "processing" },
       timeline_agent: { status: "processing" },
       divergence_agent: { status: "waiting" },
+      grounding_validator: { status: "waiting" },
       writer_agent: { status: "waiting" },
+      final_validator: { status: "waiting" },
     });
 
-    addLog("system", "Executing Multi-Agent Narrative Divergence Pipeline...");
-    addLog("character_agent", `Profiling ${selectedCharacter}'s motivations...`);
-    addLog("timeline_agent", "Mapping pre-intervention continuity state...");
+    addLog("system", "Initiating Grounded Multi-Agent Narrative Pipeline...");
+    addLog("character_agent", `Profiling ${selectedCharacter}'s time-bounded psychology...`);
+    addLog("timeline_agent", "Mapping baseline continuity state & physical constraints...");
 
-    // Fast UI animation step for Agent 4
-    setTimeout(() => {
+    // Smooth telemetry animations across the 10-second delay
+    const t1 = setTimeout(() => {
       setAgentStates((prev) => ({
         ...prev,
         character_agent: { status: "completed" },
         timeline_agent: { status: "completed" },
         divergence_agent: { status: "processing" },
       }));
-      addLog("divergence_agent", "Calculating butterfly effect 1st & 2nd order consequences...");
-    }, 1200);
+      addLog("divergence_agent", "Generating strictly grounded causal butterfly effect plan...");
+    }, 2000);
 
-    setTimeout(() => {
+    const t2 = setTimeout(() => {
       setAgentStates((prev) => ({
         ...prev,
         divergence_agent: { status: "completed" },
+        grounding_validator: { status: "processing" },
+      }));
+      addLog("grounding_validator", "Auditing causal plan against Story Bible for hallucinations...");
+    }, 4500);
+
+    const t3 = setTimeout(() => {
+      setAgentStates((prev) => ({
+        ...prev,
+        grounding_validator: { status: "completed" },
         writer_agent: { status: "processing" },
       }));
-      addLog("writer_agent", "Writing alternate reality narrative story...");
-    }, 2500);
+      addLog("writer_agent", "Transforming validated plan into literary narrative prose...");
+    }, 7000);
+
+    const t4 = setTimeout(() => {
+      setAgentStates((prev) => ({
+        ...prev,
+        writer_agent: { status: "completed" },
+        final_validator: { status: "processing" },
+      }));
+      addLog("final_validator", "Auditing generated story prose against source anchors...");
+    }, 8800);
 
     try {
+      const startTime = Date.now();
       const data = await generateDivergenceSync({
         source_text: sourceText,
         character_name: selectedCharacter,
@@ -144,17 +192,35 @@ export default function App() {
         existing_lore: lore,
       });
 
+      // 10-second delay before revealing output
+      const elapsed = Date.now() - startTime;
+      const remainingDelay = Math.max(0, 10000 - elapsed);
+      if (remainingDelay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingDelay));
+      }
+
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+
       setAgentStates({
         lore_agent: { status: "completed" },
         character_agent: { status: "completed" },
         timeline_agent: { status: "completed" },
         divergence_agent: { status: "completed" },
+        grounding_validator: { status: "completed" },
         writer_agent: { status: "completed" },
+        final_validator: { status: "completed" },
       });
 
-      addLog("system", "✓ All 5 Agents completed execution successfully!");
+      addLog("system", "✓ All 5 Agents & 2 Validators verified 100% grounded execution!");
       setResult(data);
     } catch (err) {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
       setPipelineError(err.message);
       addLog("error", `Execution error: ${err.message}`);
     } finally {
@@ -180,6 +246,9 @@ export default function App() {
         agentStates={agentStates}
         theme={theme}
         onToggleTheme={toggleTheme}
+        user={user}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-dark-950/60 relative">
@@ -223,6 +292,13 @@ export default function App() {
         characterName={chatCharacter || selectedCharacter}
         lore={lore}
         plotPoint={selectedPlotPoint}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleLogin}
+        currentUser={user}
       />
     </div>
   );

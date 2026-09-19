@@ -3,23 +3,24 @@ from services.gemini_client import gemini_client
 
 CHARACTER_AGENT_SYSTEM_PROMPT = """
 You are Agent 2: The Character Deep-Analysis Agent.
-Your responsibility is to build a psychological profile and strict knowledge boundary for a chosen character at a specific moment in time.
+Your responsibility is to build the selected character's psychological profile and knowledge boundaries derived ONLY from the authoritative Story Bible and source context.
 
-CRITICAL RULE:
-The character MUST NOT know or reference any events, revelations, or plot developments that occur AFTER the selected plot point in the timeline. Their perspective is strictly bounded by past and present events up to this moment.
+CRITICAL CONSTRAINTS:
+1. Grounding: Profile MUST be built strictly from the provided Story Bible. DO NOT invent alternative occupations, secret lives, or unrelated backstories.
+2. Time-Bound Knowledge: The character MUST NOT know any events that occur AFTER the selected checkpoint. Their perspective is strictly bounded by the past and present situation.
 
 INSTRUCTIONS:
 Produce a valid JSON object containing:
 1. `character_name`: Name of the character.
-2. `personality_traits`: List of key personality traits.
-3. `core_motivations`: What drives this character at this exact moment?
-4. `primary_goals`: Short-term and long-term objectives.
-5. `internal_conflicts`: Dilemmas, loyalties, or moral struggles facing them.
-6. `knowledge_state`:
-   - `what_they_know`: Key facts and events they are aware of up to now.
-   - `what_they_do_not_know`: Crucial secrets or future events they are unaware of.
-7. `behavioral_constraints`: Principles, oaths, or fears that constrain their choices.
-8. `decision_predisposition`: How would this character typically respond to high-pressure choices?
+2. `occupation`: Exactly as established in the Story Bible.
+3. `personality`: Key personality traits derived strictly from the text.
+4. `core_motivations`: What drives this character right now?
+5. `relationships`: Key relationships with other characters from the Story Bible.
+6. `primary_goals`: Short-term survival, ethical, or practical goals at this exact moment.
+7. `relevant_knowledge`: Key facts known to them at this time.
+8. `current_situation`: Their exact physical position and dilemma right now.
+9. `knowledge_available_at_checkpoint`: Explicit list of what they know and what future events they DO NOT know.
+10. `behavioral_constraints`: Principles, fears, oaths, or duties governing their choices.
 
 Return ONLY the JSON object.
 """
@@ -29,25 +30,27 @@ class CharacterAgent:
         self,
         character_name: str,
         plot_point: str,
-        lore_context: Dict[str, Any],
+        story_bible: Dict[str, Any],
         api_key: Optional[str] = None
     ) -> Dict[str, Any]:
         prompt = f"""
-CHARACTER TO PROFILE: {character_name}
-TARGET TIMELINE MOMENT / PLOT POINT: {plot_point}
+TARGET CHARACTER: {character_name}
+TARGET CHECKPOINT: {plot_point}
 
-WORLD LORE CONTEXT:
-Genre: {lore_context.get('genre', 'Unknown')}
-World Rules: {lore_context.get('world_rules', [])}
-Key Characters: {[c.get('name') for c in lore_context.get('characters', [])]}
-Timeline Up To Now: {[e.get('title') for e in lore_context.get('timeline_events', [])]}
+AUTHORITATIVE STORY BIBLE:
+Established Characters & Occupations: {story_bible.get('character_roles') or [c.get('name') for c in story_bible.get('characters', [])]}
+Relationships: {story_bible.get('relationships', [])}
+Established Locations: {story_bible.get('locations', [])}
+Important Objects: {story_bible.get('important_objects', [])}
+World Rules & Facts: {story_bible.get('world_rules', []) + story_bible.get('established_facts', [])}
+Timeline: {[e.get('title') for e in (story_bible.get('chronological_timeline') or story_bible.get('timeline_events', []))]}
 
-Construct a deep character analysis and time-bounded knowledge state for {character_name} right at the moment of: "{plot_point}".
+Construct a grounded psychological profile and time-bounded knowledge state for {character_name} at "{plot_point}".
 """
         result = await gemini_client.generate_json(
             prompt=prompt,
             system_instruction=CHARACTER_AGENT_SYSTEM_PROMPT,
-            temperature=0.3,
+            temperature=0.2,
             override_api_key=api_key
         )
         return result

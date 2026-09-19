@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 from services.gemini_client import gemini_client
 from services.document_parser import DocumentParser
-from services.pipeline import pipeline_runner, PIPELINE_REASONING_PROMPT, WRITER_PROMPT
+from services.pipeline import pipeline_runner
 from agents.lore_agent import lore_agent
 from agents.interview_agent import interview_agent
 from sample_data.samples import SAMPLE_STORIES
@@ -21,9 +21,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main")
 
 app = FastAPI(
-    title="Multi-Agent Narrative Framework API",
-    description="Backend service for AI narrative divergence, character profiling, and story transformation.",
-    version="1.0.0"
+    title="PRISM: Grounded Multi-Agent Narrative Framework API",
+    description="Backend service for grounded AI narrative divergence, character profiling, and story transformation.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -38,9 +38,9 @@ class AnalyzeRequest(BaseModel):
     text: str
 
 class GenerationRequest(BaseModel):
-    source_text: str
-    character_name: str
-    plot_point: str
+    source_text: Optional[str] = ""
+    character_name: Optional[str] = "Protagonist"
+    plot_point: Optional[str] = "Initial Checkpoint"
     intervention: str
     existing_lore: Optional[Dict[str, Any]] = None
 
@@ -51,14 +51,37 @@ class ChatRequest(BaseModel):
     lore_context: Dict[str, Any]
     plot_point: Optional[str] = None
 
+class LoginRequest(BaseModel):
+    username: str
+    password: Optional[str] = ""
+
 @app.get("/api/health")
 async def health_check():
-    has_key = bool(os.getenv("GEMINI_API_KEY"))
+    has_key = bool(os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY"))
     return {
         "status": "healthy",
-        "service": "Multi-Agent Narrative Framework",
-        "has_env_gemini_key": has_key
+        "service": "PRISM Grounded Multi-Agent Framework",
+        "has_api_key": has_key,
+        "active_provider": "OpenRouter" if os.getenv("OPENROUTER_API_KEY") else "Google Gemini"
     }
+
+@app.post("/api/auth/login")
+async def login(req: LoginRequest):
+    username = req.username.strip() or "Narrator"
+    return {
+        "success": True,
+        "token": f"prism_token_{username.lower()}",
+        "user": {
+            "username": username,
+            "display_name": username.capitalize(),
+            "role": "Narrative Architect",
+            "avatar": f"https://api.dicebear.com/7.x/bottts/svg?seed={username}"
+        }
+    }
+
+@app.post("/api/auth/logout")
+async def logout():
+    return {"success": True, "message": "Logged out successfully"}
 
 @app.get("/api/samples")
 async def get_samples():
@@ -99,12 +122,14 @@ async def upload_document(
     else:
         raise HTTPException(status_code=400, detail="Either a file upload or raw text must be provided.")
 
+from services.pipeline import pipeline_runner, local_engine
+
 @app.post("/api/analyze")
 async def analyze_lore(req: AnalyzeRequest):
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Source text cannot be empty.")
     try:
-        lore = await lore_agent.analyze(req.text)
+        lore = local_engine.extract_story_bible(req.text)
         return {"success": True, "lore": lore}
     except Exception as e:
         logger.error(f"Error analyzing lore: {e}")
@@ -113,76 +138,26 @@ async def analyze_lore(req: AnalyzeRequest):
 @app.post("/api/generate")
 async def generate_divergence_sync(req: GenerationRequest):
     """
-    Fast synchronous endpoint returning structured divergence & narrative output in ~5 seconds.
+    Synchronous endpoint executing the full grounded pipeline with Story Bible and Validators.
     """
     try:
-        lore_context = req.existing_lore or {
-            "genre": "Fiction",
-            "narrative_tone": "Dramatic",
-            "characters": [{"name": req.character_name}],
-            "world_rules": ["Source timeline rules apply"]
-        }
-
-        # 1. Divergence Reasoning
-        reasoning_user_prompt = f"""
-INTERVENTION: "{req.intervention}"
-CHARACTER: {req.character_name}
-PLOT CHECKPOINT: {req.plot_point}
-
-WORLD CONTEXT:
-Genre: {lore_context.get('genre', 'Drama')}
-Tone: {lore_context.get('narrative_tone', 'Tense')}
-"""
-        reasoning_data = await gemini_client.generate_json(
-            prompt=reasoning_user_prompt,
-            system_instruction=PIPELINE_REASONING_PROMPT,
-            temperature=0.3,
-            max_tokens=2048
+        result = await pipeline_runner.run_pipeline_sync(
+            source_text=req.source_text,
+            character_name=req.character_name,
+            plot_point=req.plot_point,
+            intervention=req.intervention,
+            existing_lore=req.existing_lore
         )
-
-        char_profile = reasoning_data.get("character_profile", {"character_name": req.character_name})
-        timeline_context = reasoning_data.get("timeline_context", {})
-        divergence_data = reasoning_data.get("divergence", {
-            "divergence_title": f"The Divergent Path of {req.character_name}",
-            "point_of_divergence": req.intervention,
-            "immediate_consequences": [{"title": "Altered Choice", "description": "Decision outcome modified."}],
-            "secondary_consequences": [{"title": "Ripple Effect", "description": "Downstream timeline shifted."}],
-            "unchanged_elements": ["Established world rules"],
-            "alternate_timeline": [{"step": 1, "title": "Altered Choice", "description": req.intervention}]
-        })
-
-        # 2. Narrative Writer
-        writer_user_prompt = f"""
-INTERVENTION: "{req.intervention}"
-DIVERGENCE TITLE: {divergence_data.get('divergence_title')}
-POINT OF DIVERGENCE: {divergence_data.get('point_of_divergence')}
-
-ALTERNATE TIMELINE OUTLINE:
-{json.dumps(divergence_data.get('alternate_timeline', []))}
-
-Write a rich alternate narrative story.
-"""
-        final_story = await gemini_client.generate_text(
-            prompt=writer_user_prompt,
-            system_instruction=WRITER_PROMPT,
-            temperature=0.7,
-            max_tokens=2500
-        )
-
-        return {
-            "success": True,
-            "lore": lore_context,
-            "character_profile": char_profile,
-            "timeline_context": timeline_context,
-            "divergence": divergence_data,
-            "story": final_story
-        }
+        return result
     except Exception as e:
         logger.error(f"Error in sync generation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate/stream")
 async def generate_divergence_stream(req: GenerationRequest):
+    """
+    Real-time Server-Sent Events stream executing the full grounded pipeline.
+    """
     generator = pipeline_runner.run_pipeline_stream(
         source_text=req.source_text,
         character_name=req.character_name,
