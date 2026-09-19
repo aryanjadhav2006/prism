@@ -5,6 +5,7 @@ import InputDock from "./components/InputDock";
 import IngestStoryModal from "./components/IngestStoryModal";
 import CharacterChatModal from "./components/CharacterChatModal";
 import LoginModal from "./components/LoginModal";
+import VisualStoryModal from "./components/VisualStoryModal";
 
 import { getHealth, getSamples, uploadDocument, analyzeLore, generateDivergenceSync } from "./services/api";
 
@@ -29,9 +30,7 @@ export default function App() {
     }
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  // Theme state
-  const [theme, setTheme] = useState(localStorage.getItem("THEME") || "dark");
+  const [theme, setTheme] = useState(() => localStorage.getItem("THEME") || "dark");
 
   // Selections
   const [selectedCharacter, setSelectedCharacter] = useState("");
@@ -39,6 +38,7 @@ export default function App() {
 
   // Modals state
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
+  const [isVisualModalOpen, setIsVisualModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatCharacter, setChatCharacter] = useState("");
 
@@ -238,6 +238,7 @@ export default function App() {
         activeSampleId={activeSampleId}
         onSelectSample={handleSelectSample}
         onOpenIngestModal={() => setIsIngestModalOpen(true)}
+        onOpenVisualModal={() => setIsVisualModalOpen(true)}
         lore={lore}
         selectedCharacter={selectedCharacter}
         onSelectCharacter={setSelectedCharacter}
@@ -283,6 +284,12 @@ export default function App() {
       <IngestStoryModal
         isOpen={isIngestModalOpen}
         onClose={() => setIsIngestModalOpen(false)}
+        onStoryIngested={handleStoryIngested}
+      />
+
+      <VisualStoryModal
+        isOpen={isVisualModalOpen}
+        onClose={() => setIsVisualModalOpen(false)}
         onStoryIngested={handleStoryIngested}
       />
 

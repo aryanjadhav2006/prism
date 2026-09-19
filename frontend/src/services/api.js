@@ -138,3 +138,21 @@ export async function sendCharacterChat({ character_name, user_message, chat_his
   }
   return res.json();
 }
+
+export async function generateImageStory({ details, genre, image_data }) {
+  const res = await fetch(`${API_BASE}/image-story`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      details,
+      genre,
+      image_data,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || "Image story generation failed");
+  }
+  return res.json();
+}

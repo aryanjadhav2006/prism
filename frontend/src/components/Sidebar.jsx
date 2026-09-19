@@ -1,5 +1,5 @@
 import React from "react";
-import { Upload, BookOpen, Users, Clock, Shield, ChevronRight, CheckCircle2, CircleDashed, Sun, Moon, LogIn, LogOut, User } from "lucide-react";
+import { Upload, BookOpen, Users, Clock, Shield, ChevronRight, CheckCircle2, CircleDashed, Sun, Moon, LogIn, LogOut, User, Image as ImageIcon } from "lucide-react";
 import PrismLogo from "./PrismLogo";
 
 export default function Sidebar({
@@ -7,6 +7,7 @@ export default function Sidebar({
   activeSampleId,
   onSelectSample,
   onOpenIngestModal,
+  onOpenVisualModal,
   lore,
   selectedCharacter,
   onSelectCharacter,
@@ -68,14 +69,23 @@ export default function Sidebar({
 
       {/* Main Sidebar Scroll Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* Upload / Ingest Action */}
-        <button
-          onClick={onOpenIngestModal}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyber-cyan/20 to-cyber-purple/20 hover:from-cyber-cyan/30 hover:to-cyber-purple/30 border border-cyber-cyan/40 text-cyber-cyan text-xs font-bold transition shadow-sm"
-        >
-          <Upload className="w-4 h-4" />
-          <span>Upload Story File or Paste Text</span>
-        </button>
+        {/* Upload / Ingest Actions */}
+        <div className="space-y-2">
+          <button
+            onClick={onOpenIngestModal}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyber-cyan/20 to-cyber-purple/20 hover:from-cyber-cyan/30 hover:to-cyber-purple/30 border border-cyber-cyan/40 text-cyber-cyan text-xs font-bold transition shadow-sm"
+          >
+            <Upload className="w-4 h-4" />
+            <span>Upload Story File or Paste Text</span>
+          </button>
+          <button
+            onClick={onOpenVisualModal}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-cyber-purple/15 hover:bg-cyber-purple/25 border border-cyber-purple/40 text-cyber-purple hover:text-white text-xs font-bold transition shadow-sm"
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-cyber-purple" />
+            <span>Visual Story Inception (Image)</span>
+          </button>
+        </div>
 
         {/* Demo Datasets */}
         <div className="space-y-2">
